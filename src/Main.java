@@ -18,6 +18,8 @@ public class Main {
     static JButton button1, button2, button3;
     static JLabel label;
     static JTextField textField;
+    static JPasswordField passwordField;
+    static JPanel panel;
 
     public static void main(String[] args) {
         generateFrame();
@@ -27,17 +29,26 @@ public class Main {
     private static void generateFrame(){
         frame = new JFrame("pannel");
         label = new JLabel("Login toi :)");
-        textField = new JTextField(1);
+        textField = new JTextField(20);
+        passwordField = new JPasswordField(20);
+        panel = new JPanel();
         button1 = new JButton("login");
         button1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                callApi();
+                if (textField.getText().equals("") || passwordField.getText().equals("")) {
+                    JOptionPane.showMessageDialog(frame, "Please fill all the fields");
+                }else{
+                    callApi(textField.getText(), passwordField.getText());
+                }
             }
         });
 
 
-        JPanel panel = new JPanel();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        panel.add(new JLabel("Username:"));
         panel.add(textField);
+        panel.add(new JLabel("Password:"));
+        panel.add(passwordField);
         panel.add(button1);
         panel.add(label);
         panel.setBackground(Color.WHITE);
@@ -46,7 +57,7 @@ public class Main {
         frame.setVisible(true);
     }
 
-    private static void callApi() {
+    private static void callApi(String username, String password) {
         try {
             TrustManager[] trustAllCerts = new TrustManager[]{
                     new X509TrustManager() {
@@ -70,8 +81,8 @@ public class Main {
                     .build();
 
             JSONObject body = new JSONObject();
-            body.put("username", "oscar@mail.com");
-            body.put("password", "oscaroscar");
+            body.put("username", username);
+            body.put("password", password);
             String finalBody = body.toString();
 
             HttpRequest request = HttpRequest.newBuilder()
@@ -84,6 +95,14 @@ public class Main {
             if (response.statusCode() == 200) {
                 JSONObject myObject = new JSONObject(response.body());
                 System.out.println(myObject.getString("token"));
+                JPanel panel1 = new JPanel();
+                panel1.add(new Label("You have been succesfully logged in"));
+                panel1.add(new Label("token : " + myObject.getString("token")));
+                frame.remove(panel);
+                frame.setContentPane(panel1);
+                frame.revalidate();
+                frame.repaint();
+
             } else {
                 System.out.println(response);
             }
